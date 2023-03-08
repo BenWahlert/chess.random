@@ -5,166 +5,54 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.2/chess.js" integrity="sha384-s3XgLpvmHyscVpijnseAmye819Ee3yaGa8NxstkJVyA6nuDFjt59u1QvuEl/mecz" crossorigin="anonymous"></script>
     </head>
     <body>
-        <div id="myBoard" style="width: 600px">board</div>
-        <script>
-        var board = null
-        var game = new Chess()
-        var positionCount;
+var board = null
+var game = new Chess()
 
-        var getPieceValue = function (piece) {
-            if (piece === null) {
-                return 0;
-            }
-            var getAbsoluteValue = function (piece) {
-                if (piece.type === 'p') {
-                    return 100;
-                } else if (piece.type === 'r') {
-                    return 510;
-                } else if (piece.type === 'n') {
-                    return 310;
-                } else if (piece.type === 'b') {
-                    return 333;
-                } else if (piece.type === 'q') {
-                    return 890;
-                } else if (piece.type === 'k') {
-                    return 999999;
-                }
-                throw "Unknown piece type: " + piece.type;
+function onDragStart (source, piece, position, orientation) {
 
-            }
+  if (game.game_over()) return false
+
+  if (piece.search(/^b/) !== -1) return false
+}
+
+function makeRandomMove () {
+  var possibleMoves = game.moves()
 
 
-            var absoluteValue = getAbsoluteValue(piece, piece.color === 'w');
-            return piece.color === 'w' ? absoluteValue : -absoluteValue;
-        };
+  if (possibleMoves.length === 0) return
 
-            var evaluateBoard = function (board) {
-                var totalEvaluation = 0;
-               for (var i = 0; i < 8; i++) {
-                    for (var j = 0; j < 8; j++) {
-                        totalEvaluation = totalEvaluation + getPieceValue('a4');
-                    }
-                }
-                return totalEvaluation;
+  var randomIdx = Math.floor(Math.random() * possibleMoves.length)
+  game.move(possibleMoves[randomIdx])
+  board.position(game.fen())
+}
 
-            };
+function onDrop (source, target) {
 
-            var minimax = function (depth, game, isMaximisingPlayer) {
-                positionCount++;
-                if (depth === 0) {
-                  return evaluateBoard(game.board);
-                }
+  var move = game.move({
+    from: source,
+    to: target,
+    promotion: 'q' //promotes to queen
+  })
 
-                var newGameMoves = game.moves();
-
-                if (isMaximisingPlayer) {
-                    var bestMove = -9999999;
-                    for (var i = 0; i < newGameMoves.length; i++) {
-                        game.move(newGameMoves[i]);
-                        bestMove = Math.max(bestMove, minimax(depth - 1, game, !isMaximisingPlayer));
-                        game.undo();
-                    }
-                    return bestMove;
-                } else {
-                    var bestMove = 9999999;
-                    for (var i = 0; i < newGameMoves.length; i++) {
-                        game.move(newGameMoves[i]);
-                        bestMove = Math.min(bestMove, minimax(depth - 1, game, !isMaximisingPlayer));
-                        game.undo();
-                    }
-                    return bestMove;
-                }
-            };
-
-        var minimaxRoot = function(depth, game, isMaximisingPlayer) {
-
-            var newGameMoves = game.moves();
-
-            var bestMove = -9999999;
-            var bestMoveFound;
-
-            for(var i = 0; i < newGameMoves.length; i++) {
-                var newGameMove = newGameMoves[i];
-                game.move(newGameMove);
-                var value = minimax(depth - 1, game, !isMaximisingPlayer);
-                game.undo();
-                if(value >= bestMove) {
-                    bestMove = value;
-                    bestMoveFound = newGameMove;
-                }
-            }
-            return bestMoveFound;
-        };
+  if (move === null) return 'snapback'
 
 
-        var getBestMove = function (game) {
-            if (game.game_over()) {
-                alert("Game over");
-            }
-
-            positionCount = 0;
-            var depth = parseInt($('#search-depth').find(':selected').text());
-            var d = new Date().getTime();
-            var bestMove = minimaxRoot(2, game, true);
-            var d2 = new Date().getTime();
-            var moveTime = (d2 - d);
-            var positionsPerS = ( positionCount * 1000 / moveTime);
-
-            $('#position-count').text(positionCount);
-            $('#time').text(moveTime/1000 + 's');
-            $('#positions-per-s').text(positionsPerS);
-            return bestMove
-
-        };
+  window.setTimeout(makeRandomMove, 250)
+}
 
 
-        function onDragStart (source, piece, position, orientation) {
+function onSnapEnd () {
+  board.position(game.fen())
+}
 
-          if (game.game_over()) return false
-
-
-          if (piece.search(/^b/) !== -1) return false
-        }
-
-        function makeMove () {
-          var bestMove = getBestMove(game);
-          game.move(bestMove);
-          board.position(game.fen());
-//        renderMoveHistory(game.history());
-          if (game.game_over()) {
-              alert('Game over');
-          }
-      };
-
-
-        function onDrop (source, target) {
-          var move = game.move({
-            from: source,
-            to: target,
-            promotion: 'q'
-
-          })
-
-
-          if (move === null) return 'snapback'
-
-          window.setTimeout(makeMove, 250)
-        }
-
-
-        function onSnapEnd () {
-          board.position(game.fen())
-        }
-
-        var config = {
-          draggable: true,
-          position: 'start',
-          pieceTheme: 'assets/img/chesspieces/wikipedia/{piece}.png',
-          onDragStart: onDragStart,
-          onDrop: onDrop,
-          onSnapEnd: onSnapEnd
-        }
-        board = Chessboard('myBoard', config)
+var config = {
+  draggable: true,
+  position: 'start',
+  onDragStart: onDragStart,
+  onDrop: onDrop,
+  onSnapEnd: onSnapEnd
+}
+board = Chessboard('myBoard', config)
         </script>
     </body>
 </html>
