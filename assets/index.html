@@ -12,7 +12,6 @@
         var positionCount;
 
         var getPieceValue = function (piece) {
-          alert(piece.type)
             if (piece === null) {
                 return 0;
             }
@@ -40,15 +39,10 @@
         };
 
             var evaluateBoard = function (board) {
-              alert("evalboard")
                 var totalEvaluation = 0;
-                alert("evalboard2")
                for (var i = 0; i < 8; i++) {
                     for (var j = 0; j < 8; j++) {
-                      alert("evalboard3")
-              //        alert(game.board[i])
                         totalEvaluation = totalEvaluation + getPieceValue('a4');
-                        alert("evalboard4")
                     }
                 }
                 return totalEvaluation;
@@ -57,9 +51,7 @@
 
             var minimax = function (depth, game, isMaximisingPlayer) {
                 positionCount++;
-                alert("enter minimax")
                 if (depth === 0) {
-                  alert(depth)
                   return evaluateBoard(game.board);
                 }
 
@@ -77,7 +69,6 @@
                     var bestMove = 9999999;
                     for (var i = 0; i < newGameMoves.length; i++) {
                         game.move(newGameMoves[i]);
-                        alert("minimizeplayer")
                         bestMove = Math.min(bestMove, minimax(depth - 1, game, !isMaximisingPlayer));
                         game.undo();
                     }
@@ -115,7 +106,6 @@
             var depth = parseInt($('#search-depth').find(':selected').text());
             var d = new Date().getTime();
             var bestMove = minimaxRoot(2, game, true);
-            alert("hi")
             var d2 = new Date().getTime();
             var moveTime = (d2 - d);
             var positionsPerS = ( positionCount * 1000 / moveTime);
